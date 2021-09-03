@@ -1,6 +1,7 @@
 package com.rest.webservices.restfulwebservices.Controller;
 
 
+import com.rest.webservices.restfulwebservices.Exceptions.UserNotFoundException;
 import com.rest.webservices.restfulwebservices.Models.User;
 import com.rest.webservices.restfulwebservices.Services.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,16 @@ public class UserResourceController {
 
     @GetMapping("/users/{id}")
     public User getUserById(@PathVariable int id) {
-        return userDao.findOne(id);
+        User user= userDao.findOne(id);
+        if(user==null)
+            throw new UserNotFoundException("id "+id);
+        return user;
     }
 
     @PostMapping("/add/user")
     public ResponseEntity addUser(@RequestBody User user) {
         User savedUser = userDao.saveUser(user);
+        //this will add location to the header response, the location would be /add/user/{id} {id} would be replaced with id
         URI location= ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedUser.getId()).toUri();
         return ResponseEntity.created(location).build();
 
